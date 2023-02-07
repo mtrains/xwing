@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Fly the X-Wing!</title>
+	    <link rel="shortcut icon" href="xwing.png" type="image/x-icon" />
+
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas"></canvas>
+
+<script>
+    
+    //Important! Must upload all explosion images to github before publishing code. 
+    
+    var canvas = document.getElementById("myCanvas");//muu
+    var xwingImg = new Image();
+    xwingImg.src = 'xwing.png';
+    var starWarsImg = new Image();
+    starWarsImg.src = 'star-wars-episode-9.jpg';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var ctx = canvas.getContext("2d");
+    var paddleWidth = 200//
+    var paddleHeight = 30
+    var paddleY = canvas.height-paddleHeight
+    var redLaseY = paddleY 
+    var upPressed = false
+    var downPressed = false
+    var lasers = [];
+    var lives = 10;
+    for(var i=0;i<7;i++){
+        lasers[i] = {
+          x: 0,
+          go: false
+        };
+    }
+    var ties = [];
+    var score = 0;
+    var totalScore = 0
+    var level = 5;
+	var fighterBack = 0
+	var endSkip = false
+	var today = new Date();
+	var dd = today.getDate();
+var mm = today.getMonth()+1; //January is 0!
+	var launchTies = true
+	var launchTime = 0
+    var number = 4
+	
+	var tielaserboom = false
+    createTieFighters(level);
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+	
+function incScore(){
+	score+=1;
+    totalScore+=1;
+	if(score >= level){//add time delay to allow last TIE fighter to explode
+		level += 2;//changed this, w/o 
+		createTieFighters(level);
+		fighterBack = 2000
+		launchTies = false
+        score = 0
+	}
+	if(launchTies == false){
+		launchTime += 1
+	}
+	if(launchTime >= 666){//change this to 2000/tie.speed if tie.speed is changed
+		launchTies = true
+		launchTime = 0
+		fighterBack = 0
+		resetTie(tie);
+		
+	}
+}
+	
+	
+	
+function createTieFighters(count){
+	ties = [];
+    for(var i=0;i<count;i++){
+        ties[i]={};
+        resetTie(ties[i]);
+    }
+	
+}
+function resetTie(tie){
+    tie.backPass = 5
+	tie.x = (Math.floor(Math.random() * canvas.width * tie.backPass) + 1)+canvas.width+fighterBack;
+	tie.y = Math.floor(Math.random() * canvas.height)+35;
+	tie.speed = 3; //change launchTime stuff if this is changed
+    tie.laserX = 600;
+    tie.alive = true;
+    tie.indivAlive = true
+    tie.Img = new Image();
+    tie.Img.src = 'tiefighter.png';
+    tie.time = 4//change to 4 later
+    tie.roundedTime = 4
+    tie.startTime = false
+    tie.size = 100
+    tie.explosionMove = 0
+	if(tie.y >= canvas.height-40){
+		resetTie(tie); 
+	}
+};
+function keyDownHandler(e) {
+    if(e.keyCode == 40 && lives > 0) {//down arrow
+        downPressed = true;
+    }
+    else if(e.keyCode == 38 && lives > 0) {//up arrow
+        upPressed = true;
+    }
+	
+    else if(e.keyCode == 83 && lives > 0) {//down or s
+        downPressed = true;
+    }
+	
+    else if(e.keyCode == 87 && lives > 0) {//up or w
+        upPressed = true;
+    }
+	
+	/*else if(e.keyCode == 76 && lives > 0) {//l for skip level
+		level += 1;
+		endSkip = true;//This doesn't work right now. Fix this later. (Requires fundamental changes)
+	}
+		*/
+    else if(e.keyCode == 32 && lives > 0) {
+        for(var i=0;i<lasers.length;i++){
+            if(!lasers[i].go){
+                lasers[i].go = true;
+                lasers[i].x = 0;
+                break;
+            }
+        }	
+	    
+    }
+	else if(e.keyCode == 82) {
+		window.location.reload(false);
+	}
+}
+function keyUpHandler(e) {
+    if(e.keyCode == 40 && lives > 0) {
+        downPressed = false;
+    }
+    else if(e.keyCode == 38 && lives > 0) {
+        upPressed = false;
+    }
+    if(e.keyCode == 83 && lives > 0) {
+        downPressed = false;
+    }
+    else if(e.keyCode == 87 && lives > 0) {
+        upPressed = false;
+    }
+	else if(e.keyCode == 76 && lives > 0) {//l for skip level
+		endSkip = false;
+	}
+}
+function drawXwing(){
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fill();
+    ctx.closePath();
+if(lives > 0){
+	ctx.drawImage(xwingImg,0,paddleY-50,200,100);
+	//ctx.drawGif(explosionImg,0,paddleY-50,100,100);
+	//ctx.drawImage(myGif,0,0);
+    }
+}
+function triangle(tie,x1,y1,x2,y2,x3,y3,fill){
+    ctx.beginPath();
+    ctx.moveTo(tie.x+x1, tie.y+y1);
+    ctx.lineTo(tie.x+x2, tie.y+y2);
+    ctx.lineTo(tie.x+x3, tie.y+y3);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.closePath();
+}
+function drawTIE(){
+    for(var t=0;t<ties.length;t++){
+        var tie = ties[t];
+        
+            if(tie.startTime == true){
+                explosion(tie);
+            }
+  /*      		ctx.font = "72px Arial";//get rid of this later, this is to show tie.time for each fighter
+    ctx.fillStyle = "#f37101ff";
+    ctx.fillText(tie.time, tie.x,tie.y-50);
+        */
+        if(tie.alive){
+        	ctx.drawImage(tie.Img,tie.x-(tie.explosionMove),tie.y-(tie.size/2), tie.size,tie.size);
+           
+            if(tie.x <= 600 && lives > 0){
+				tielaserboom = false
+                ctx.beginPath();
+                ctx.rect(tie.laserX, tie.y, 40, 2);
+                ctx.fillStyle = "green";
+                ctx.fill();
+                ctx.closePath();
+		   
+		//ctx.beginPath();
+                //ctx.rect(tie.x, 0, 100, canvas.height);
+                //ctx.fillStyle = "green";
+                //ctx.fill();
+                //ctx.closePath();
+	//making tie lasers cause damage to x wing	    
+		if(tie.laserX <= 120 && tie.laserX >= 5 && tie.y >= paddleY-40 && tie.y <= paddleY+40 && lives > 0){
+		lives -= 1
+		tielaserboom = true
+		}
+			
+		if(tielaserboom == false){
+                tie.laserX -= 20
+		}
+		if(tielaserboom == true){
+                tie.laserX = 12093709
+		}
+		    //making tie cause 5 damage to x wing if they crash
+		if(tie.y >= paddleY-70 && tie.y <= paddleY+70 && tie.x <=120 && tie.x >= 5 && lives > 0 && tie.indivAlive == true){
+			lives -= 5
+            //score increase here
+            incScore();
+            tie.speed = 0 //stopTIE here
+            tie.indivAlive = false   
+            tie.startTime = true
+		}
+				
+            }
+            if(tie.x < canvas.width){
+                for(var i=0;i<lasers.length;i++){
+                    var laser = lasers[i];
+                    if(laser.x >= tie.x && laser.x <= tie.x + 120 && paddleY <= tie.y + 50 && paddleY >= tie.y - 50 && laser.go == true && lives > 0 && tie.indivAlive == true){
+                        tie.speed = 0 //stopTIE here
+                        tie.indivAlive = false   
+                        tie.startTime = true
+                        laser.go = false;
+						incScore();
+                    }
+                }
+            }
+  
+            if(tie.x <= -100){ //when TIE passes the X-wing, it is reset back to go in for another run. This should make the TIE fighters more dense if they are not destroyed
+            	resetTie(tie);
+                tie.backPass = 1.5
+            }
+    	}
+       
+    
+    }
+}
+    
+function explosion(tie){
+    
+    if(tie.time <= 180){
+        tie.time ++
+    }
+        tie.Img.src = 'image_part_0'+tie.roundedTime+'.png';
+        tie.size = 200
+        tie.explosionMove = 50
+    
+    if((tie.time % 10) ==0){
+  
+        tie.roundedTime += 4 //this is a reduced frame rate for less chance of lag. This also makes some images unnecessary. 
+        
+        
+        
+    //when tie.time = %10 then it will take tie.roundedTime and increase by 2, which will in turn change the Img displayed
+    }
+    
+    
+    
+    
+}
+	
+function drawDeath(){
+	if(lives <= -0.00001){
+		lives = 0
+	}
+	if(lives <= 0){
+		ctx.font = "72px Arial";
+    ctx.fillStyle = "#f37101ff";
+    ctx.fillText("GAME OVER", canvas.width/2-260, canvas.height/2);
+	
+ctx.font = "40px Arial";
+    ctx.fillStyle = "orange";
+    ctx.fillText("Press r to restart", canvas.width/2-180, canvas.height/2+100);	
+        
+    //    ctx.drawImage(starWarsImg,canvas.width/2-200,canvas.height/2+120, 370,150);
+	
+	
+if(dd == 04 && mm == 05){ 
+	ctx.font = "60px Arial";
+    ctx.fillStyle = "yellow";
+    ctx.fillText("Happy Star Wars Day!", canvas.width/2-320, canvas.height/2+200);
+}
+}
+	
+}
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawXwing();
+    drawTIE();
+	drawDeath();
+    
+	
+    if(upPressed==true && paddleY >= 50){
+        paddleY -=5
+    }
+    else if(downPressed == true && paddleY <= (canvas.height-paddleHeight)){
+        paddleY += 5
+    }
+    for(var i=0;i<lasers.length;i++){
+        var laser = lasers[0];
+        if(laser.go == true){
+            ctx.beginPath();
+            ctx.rect(laser.x, paddleY, 40, 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+            laser.x += 15
+        }
+        if(laser.x > canvas.width){
+            laser.go = false;
+        }
+    }
+//if(launchTies == false && tie.x <= canvas.width){
+//   for(var t=0;t<ties.length;t++){
+//		ties[t].x-=ties[t].speed;
+//    }
+//}
+    for(var t=0;t<ties.length;t++){
+		ties[t].x-=ties[t].speed;
+    
+}
+	
+	  ctx.beginPath();
+            ctx.rect(7, 6, 250, 16);
+            ctx.fillStyle = "#606060";
+            ctx.fill();
+            ctx.closePath();
+	
+	ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("Score: "+totalScore+" Level: "+((0.5*level)-1.5)+" Lives: "+lives, 8, 20);
+    	ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(+score+" out of "+level+" TIE fighters destroyed", 408, 20);
+}
+setInterval(draw, 10);
+</script>
+
+</body>
+</html>
