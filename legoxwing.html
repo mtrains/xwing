@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Fly the LEGO X-Wing!</title>
+	<link rel="shortcut icon" href="Lego_R2D2.png" type="image/x-icon" />
+
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas"></canvas>
+
+<script>
+    
+    //Important! Must upload all explosion images to github before publishing code. 
+    
+    var canvas = document.getElementById("myCanvas");//muu
+    var xwingImg = new Image();
+    xwingImg.src = 'Lego_Xwing_2018.png';
+    var starWarsImg = new Image();
+    starWarsImg.src = 'Lego-Star-Wars-The-Skywalker-Saga.jpg';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var ctx = canvas.getContext("2d");
+    var paddleWidth = 200//
+    var paddleHeight = 30
+    var paddleY = canvas.height-paddleHeight
+    var redLaseY = paddleY 
+    var upPressed = false
+    var downPressed = false
+    var lasers = [];
+    var lives = 10;
+    for(var i=0;i<7;i++){
+        lasers[i] = {
+          x: 0,
+          go: false
+        };
+    }
+    var ties = [];
+    var score = 0;
+    var totalScore = 0
+    var level = 5;
+	var fighterBack = 0
+	var endSkip = false
+	var today = new Date();
+	var dd = today.getDate();
+var mm = today.getMonth()+1; //January is 0!
+	var launchTies = true
+	var launchTime = 0
+	var loadTime = 1
+	 var loadExplode = 4
+    var number = 4
+    var xwingNumber = 1
+	
+	var tielaserboom = false
+    createTieFighters(level);
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+function loadDraw(){
+    //This is where I will load images before they are needed so they will be ready when needed
+    //later have them always there out of screen
+
+    var loadXwing = new Image();
+    loadXwing.src = 'Lego_Xwing_2018.png'
+    ctx.drawImage(loadXwing, -200, -200, 100, 100);
+    var loadTIE = new Image();
+    loadTIE.src = 'Lego_TIE_fighter_2018.png'
+    ctx.drawImage(loadTIE, -200, -200, 100, 100);
+	
+	    var loadXwingTwo = new Image();
+    loadXwingTwo.src = 'Lego_Xwing_2012.png'
+    ctx.drawImage(loadXwingTwo, -200, -200, 100, 100);
+    var loadTIETwo = new Image();
+    loadTIETwo.src = 'Lego_TIE_fighter_2012.png'
+    ctx.drawImage(loadTIETwo, -200, -200, 100, 100);
+	
+	    var loadXwingThree = new Image();
+    loadXwingThree.src = 'Lego_Xwing_Microfighter.png'
+    ctx.drawImage(loadXwingThree, -200, -200, 100, 100);
+    var loadTIEThree = new Image();
+    loadTIEThree.src = 'Lego_TIE_Interceptor_2014.png'
+    ctx.drawImage(loadTIEThree, -200, -200, 100, 100);
+	//leave off here
+	    var loadXwingFour = new Image();
+    loadXwingFour.src = 'Lego_Resistance_X_wing.png	'
+    ctx.drawImage(loadXwingFour, -200, -200, 100, 100);
+    var loadTIEFour = new Image();
+    loadTIEFour.src = 'Lego_TIE_Fighter_First_Order.png	'
+    ctx.drawImage(loadTIEFour, -200, -200, 100, 100);
+	
+    var loadExplosionFour = new Image();
+    loadExplosionFour.src = 'image_part_04.png'
+    ctx.drawImage(loadExplosionFour, -200,-200, 100, 100);
+    var loadExplosionEight = new Image();
+    loadExplosionEight.src = 'image_part_08.png'
+    ctx.drawImage(loadExplosionEight, -200,-200, 100, 100);
+    var loadExplosionTwelve = new Image();
+    loadExplosionTwelve.src = 'image_part_012.png'
+    ctx.drawImage(loadExplosionTwelve, -200,-200, 100, 100);
+    var loadExplosionSixteen = new Image();
+    loadExplosionSixteen.src = 'image_part_016.png'
+    ctx.drawImage(loadExplosionSixteen, -200,-200, 100, 100);
+    var loadExplosionTwenty = new Image();
+    loadExplosionTwenty.src = 'image_part_020.png'
+    ctx.drawImage(loadExplosionTwenty, -200,-200, 100, 100);
+    var loadExplosionTwentyFour = new Image();
+    loadExplosionTwentyFour.src = 'image_part_024.png'
+    ctx.drawImage(loadExplosionTwentyFour, -200,-200, 100, 100);
+    var loadExplosionTwentyEight = new Image();
+    loadExplosionTwentyEight.src = 'image_part_028.png'
+    ctx.drawImage(loadExplosionTwentyEight, -200,-200, 100, 100);
+    var loadExplosionThirtyTwo = new Image();
+    loadExplosionThirtyTwo.src = 'image_part_032.png'
+    ctx.drawImage(loadExplosionThirtyTwo, -200,-200, 100, 100);
+    var loadExplosionThirtySix = new Image();
+    loadExplosionThirtySix.src = 'image_part_036.png'
+    ctx.drawImage(loadExplosionThirtySix, -200,-200, 100, 100);
+    var loadExplosionForty = new Image();
+    loadExplosionForty.src = 'image_part_040.png'
+    ctx.drawImage(loadExplosionForty, -200,-200, 100, 100);
+    var loadExplosionFortyFour = new Image();
+    loadExplosionFortyFour.src = 'image_part_044.png'
+    ctx.drawImage(loadExplosionFortyFour, -200,-200, 100, 100);
+    var loadExplosionFortyEight = new Image();
+    loadExplosionFortyEight.src = 'image_part_048.png'
+    ctx.drawImage(loadExplosionFortyEight, -200,-200, 100, 100);
+    var loadExplosionFiftyTwo = new Image();
+    loadExplosionFiftyTwo.src = 'image_part_052.png'
+    ctx.drawImage(loadExplosionFiftyTwo, -200,-200, 100, 100);
+    var loadExplosionFiftySix = new Image();
+    loadExplosionFiftySix.src = 'image_part_056.png'
+    ctx.drawImage(loadExplosionFiftySix, -200,-200, 100, 100);
+    var loadExplosionSixty = new Image();
+    loadExplosionSixty.src = 'image_part_060.png'
+    ctx.drawImage(loadExplosionSixty, -200,-200, 100, 100);
+    var loadExplosionSixtyFour = new Image();
+    loadExplosionSixtyFour.src = 'image_part_064.png'
+    ctx.drawImage(loadExplosionSixtyFour, -200,-200, 100, 100);
+    
+    
+}
+	
+	
+function incScore(){
+	score+=1;
+    totalScore+=1;
+	if(score >= level){//add time delay to allow last TIE fighter to explode
+
+		launchTies = false
+	}
+	
+}
+	
+	
+	
+function createTieFighters(count){
+	ties = [];
+    for(var i=0;i<count;i++){
+        ties[i]={};
+        resetTie(ties[i]);
+    }
+	
+}
+
+
+function resetTie(tie){
+    tie.backPass = 5
+	tie.x = (Math.floor(Math.random() * canvas.width * tie.backPass) + 1)+canvas.width+fighterBack;
+	tie.y = Math.floor(Math.random() * canvas.height)+35;
+	tie.speed = 3; //change launchTime stuff if this is changed
+    tie.laserX = 600;
+    tie.alive = true;
+    tie.indivAlive = true
+    tie.Img = new Image();
+    tie.Img.src = 'Lego_TIE_fighter_2018.png';
+    tie.time = 4//change to 4 later
+    tie.roundedTime = 4
+    tie.startTime = false
+    tie.size = 100
+    tie.explosionMove = 0
+	if(tie.y >= canvas.height-40){
+		resetTie(tie); 
+	}
+
+
+};
+
+function keyDownHandler(e) {
+    if(e.keyCode == 40 && lives > 0) {//down arrow
+        downPressed = true;
+    }
+
+    else if(e.keyCode == 38 && lives > 0) {//up arrow
+        upPressed = true;
+    }
+	
+    else if(e.keyCode == 83 && lives > 0) {//down or s
+        downPressed = true;
+    }
+	
+    else if(e.keyCode == 87 && lives > 0) {//up or w
+        upPressed = true;
+    }
+	
+	else if(e.keyCode == 88 && lives > 0) {//l for skip level
+		xwingNumber ++ ;
+		endSkip = true;//This doesn't work right now. Fix this later. (Requires fundamental changes)
+	}
+		
+    else if(e.keyCode == 32 && lives > 0) {
+        for(var i=0;i<lasers.length;i++){
+            if(!lasers[i].go){
+                lasers[i].go = true;
+                lasers[i].x = 0;
+                break;
+            }
+        }	
+	    
+    }
+	else if(e.keyCode == 82) {
+		window.location.reload(false);
+	}
+}
+
+function keyUpHandler(e) {
+    if(e.keyCode == 40 && lives > 0) {
+        downPressed = false;
+    }
+    else if(e.keyCode == 38 && lives > 0) {
+        upPressed = false;
+    }
+    if(e.keyCode == 83 && lives > 0) {
+        downPressed = false;
+    }
+    else if(e.keyCode == 87 && lives > 0) {
+        upPressed = false;
+    }
+	else if(e.keyCode == 88 && lives > 0) {//x for change xwing
+		endSkip = false;
+	}
+}
+
+function drawXwing(){
+
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fill();
+    ctx.closePath();
+if(lives > 0){
+	ctx.drawImage(xwingImg,0,paddleY-50,240,120);
+	//ctx.drawGif(explosionImg,0,paddleY-50,100,100);
+	//ctx.drawImage(myGif,0,0);
+    }
+}
+
+
+function triangle(tie,x1,y1,x2,y2,x3,y3,fill){
+    ctx.beginPath();
+    ctx.moveTo(tie.x+x1, tie.y+y1);
+    ctx.lineTo(tie.x+x2, tie.y+y2);
+    ctx.lineTo(tie.x+x3, tie.y+y3);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.closePath();
+}
+function drawTIE(){
+    for(var t=0;t<ties.length;t++){
+        var tie = ties[t];
+        
+            if(tie.startTime == true){
+                explosion(tie);
+            }
+  /*      		ctx.font = "72px Arial";//get rid of this later, this is to show tie.time for each fighter
+    ctx.fillStyle = "#f37101ff";
+    ctx.fillText(tie.time, tie.x,tie.y-50);
+        */
+        if(tie.alive){
+        	ctx.drawImage(tie.Img,tie.x-(tie.explosionMove),tie.y-(tie.size/2), tie.size,tie.size);
+           
+            if(tie.x <= 600 && lives > 0){
+				tielaserboom = false
+                ctx.beginPath();
+                ctx.rect(tie.laserX, tie.y, 40, 2);
+                ctx.fillStyle = "green";
+                ctx.fill();
+                ctx.closePath();
+		   
+		//ctx.beginPath();
+                //ctx.rect(tie.x, 0, 100, canvas.height);
+                //ctx.fillStyle = "green";
+                //ctx.fill();
+                //ctx.closePath();
+	//making tie lasers cause damage to x wing	    
+		if(tie.laserX <= 120 && tie.laserX >= 5 && tie.y >= paddleY-40 && tie.y <= paddleY+40 && lives > 0){
+		lives -= 1
+		tielaserboom = true
+		}
+			
+		if(tielaserboom == false){
+                tie.laserX -= 20
+		}
+		if(tielaserboom == true){
+                tie.laserX = 12093709
+		}
+		    //making tie cause 5 damage to x wing if they crash
+		if(tie.y >= paddleY-70 && tie.y <= paddleY+70 && tie.x <=120 && tie.x >= -50 && lives > 0 && tie.indivAlive == true){
+			lives -= 5
+            //score increase here
+            incScore();
+            tie.speed = 0 //stopTIE here
+            tie.indivAlive = false   
+            tie.startTime = true
+		}
+				
+            }
+            if(tie.x < canvas.width){
+                for(var i=0;i<lasers.length;i++){
+                    var laser = lasers[i];
+                    if(laser.x >= tie.x && laser.x <= tie.x + 120 && paddleY <= tie.y + 50 && paddleY >= tie.y - 50 && laser.go == true && lives > 0 && tie.indivAlive == true){
+                        tie.speed = 0 //stopTIE here
+                        tie.indivAlive = false   
+                        tie.startTime = true
+                        laser.go = false;
+						incScore();
+
+                    }
+                }
+            }
+  
+            if(tie.x <= -100){ //when TIE passes the X-wing, it is reset back to go in for another run. This should make the TIE fighters more dense if they are not destroyed
+            	resetTie(tie);
+                tie.backPass = 1.5
+            }
+    	}
+       
+    //changing the x wing and tie fighter
+	if(xwingNumber >= 5){
+		xwingNumber = 1
+	}	
+	if(xwingNumber == 1){
+		xwingImg.src = 'Lego_Xwing_2018.png';
+		if(tie.indivAlive == true){
+			tie.Img.src = 'Lego_TIE_fighter_2018.png';
+		}
+	}		
+	if(xwingNumber == 2){
+		xwingImg.src = 'Lego_Xwing_2012.png';
+		if(tie.indivAlive == true){
+			tie.Img.src = 'Lego_TIE_fighter_2012.png';
+		}
+	}	
+	if(xwingNumber == 3){
+		xwingImg.src = 'Lego_Xwing_Microfighter.png';
+		if(tie.indivAlive == true){
+			tie.Img.src = 'Lego_TIE_Interceptor_2014.png';
+			tie.size = 140
+		}
+	}		
+	if(xwingNumber == 4){
+		xwingImg.src = 'Lego_Resistance_X_wing.png';
+		if(tie.indivAlive == true){
+			tie.Img.src = 'Lego_TIE_Fighter_First_Order.png';
+			tie.size = 100
+		}		
+	}		
+	
+    }
+}
+
+    
+function explosion(tie){
+    
+    if(tie.time <= 180){
+        tie.time ++
+    }
+        tie.Img.src = 'image_part_0'+tie.roundedTime+'.png';
+        tie.size = 200
+        tie.explosionMove = 50
+    
+    if((tie.time % 10) ==0){
+  
+        tie.roundedTime += 4 //this is a reduced frame rate for less chance of lag. This also makes some images unnecessary. 
+                            //still lags
+        
+        
+    //when tie.time = %10 then it will take tie.roundedTime and increase by 2, which will in turn change the Img displayed
+    }
+    
+    
+    
+    
+}
+
+	
+function drawDeath(){
+	if(lives <= -0.00001){
+		lives = 0
+	}
+	if(lives <= 0){
+		ctx.font = "72px Arial";
+    ctx.fillStyle = "#f37101ff";
+    ctx.fillText("GAME OVER", canvas.width/2-260, canvas.height/2);
+	
+ctx.font = "40px Arial";
+    ctx.fillStyle = "orange";
+    ctx.fillText("Press r to restart", canvas.width/2-180, canvas.height/2+100);	
+        
+        ctx.drawImage(starWarsImg,canvas.width/2-200,canvas.height/2+120, 350,180);
+	
+	
+if(dd == 04 && mm == 05){ 
+	ctx.font = "60px Arial";
+    ctx.fillStyle = "yellow";
+    ctx.fillText("Happy Star Wars Day!", canvas.width/2-320, canvas.height/2+200);
+}
+}
+
+	
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawXwing();
+    drawTIE();
+	drawDeath();
+    
+    loadDraw();
+    
+
+	
+	
+	
+	
+    if(launchTies == false){
+		launchTime ++ 
+	}
+	if(launchTime >= 130){//change this to 2000/tie.speed if tie.speed is changed
+		level += 2;//changed this, w/o 
+		createTieFighters(level);
+        score = 0
+       
+        launchTies = true
+		launchTime = 0
+		resetTie(tie);
+		
+	}
+    
+    
+	
+    if(upPressed==true && paddleY >= 50){
+        paddleY -=5
+    }
+    else if(downPressed == true && paddleY <= (canvas.height-paddleHeight)){
+        paddleY += 5
+    }
+
+    for(var i=0;i<lasers.length;i++){
+        var laser = lasers[0];
+        if(laser.go == true){
+            ctx.beginPath();
+            ctx.rect(laser.x+100, paddleY, 40, 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+            laser.x += 15
+        }
+        if(laser.x > canvas.width){
+            laser.go = false;
+        }
+    }
+//if(launchTies == false && tie.x <= canvas.width){
+//   for(var t=0;t<ties.length;t++){
+//		ties[t].x-=ties[t].speed;
+//    }
+//}
+
+    for(var t=0;t<ties.length;t++){
+		ties[t].x-=ties[t].speed;
+    
+}
+
+	
+	  ctx.beginPath();
+            ctx.rect(7, 6, 250, 16);
+            ctx.fillStyle = "#606060";
+            ctx.fill();
+            ctx.closePath();
+	
+	ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("Score: "+totalScore+" Level: "+((0.5*level)-1.5)+" Lives: "+lives, 8, 20);
+
+    	ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(+score+" out of "+level+" TIE fighters destroyed", 408, 20);
+
+}
+setInterval(draw, 10);
+
+</script>
+
+</body>
+</html>

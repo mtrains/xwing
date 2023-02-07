@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Fly the X Wing: Super Hard Fast Mode</title>
+	    <link rel="shortcut icon" href="xwing.png" type="image/x-icon" />
+
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas"></canvas>
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var tieImg = new Image();
+    tieImg.src = 'tiefighter.png';
+    var xwingImg = new Image();
+    xwingImg.src = 'xwing.png';//'https://cdn.discordapp.com/attachments/539511445407268898/539542929119772695/image_part_032.png';
+	//var explosionGif = new Gif(); 
+	//explosionGif.src = 'http://www.animatedimages.org/data/media/1176/animated-explosion-image-0007.gif';
+	//var myGif = GIF();
+ 	//myGif.load("GIFhttp://www.animatedimages.org/data/media/1176/animated-explosion-image-0007.gif");
+
+//var myGif;
+// Can not load gif cross domain unless it has CORS header
+//const gifURL = "https://upload.wikimedia.org/wikipedia/commons/a/a2/Wax_fire.gif";
+// timeout just waits till script has been parsed and executed
+// then starts loading a gif
+//setTimeout(()=>{
+    //myGif = GIF();                  // creates a new gif  
+    //myGif.onerror = function(e){
+    //   console.log("Gif loading error " + e.type);
+    //}
+    //myGif.load(gifURL);  
+
+//},0); 
+	
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight-24;
+    var ctx = canvas.getContext("2d");
+    var paddleWidth = 200//
+    var paddleHeight = 30
+    var paddleY = canvas.height-paddleHeight
+    var redLaseY = paddleY 
+    var upPressed = false
+    var downPressed = false
+    var lasers = [];
+    var lives = 10;
+    for(var i=0;i<7;i++){
+        lasers[i] = {
+          x: 0,
+          go: false
+        };
+    }
+    var ties = [];
+    var score = 0;
+    var level = 1;
+	var tielaserboom = false
+    createTieFighters(level);
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+function createTieFighters(count){
+	ties = [];
+    for(var i=0;i<count;i++){
+        ties[i]={};
+        resetTie(ties[i]);
+    }
+	
+}
+
+
+function resetTie(tie){
+	tie.x = (Math.floor(Math.random() * canvas.width) + 1)+canvas.width;
+	tie.y = Math.floor(Math.random() * canvas.height)+35;
+	tie.speed = 3;
+    tie.laserX = 600;
+    tie.alive = true;
+	if(tie.y >= canvas.height-40){
+		resetTie(tie); 
+	}
+
+};
+
+function keyDownHandler(e) {
+    if(e.keyCode == 40 && lives > 0) {
+        downPressed = true;
+    }
+
+    else if(e.keyCode == 38 && lives > 0) {
+        upPressed = true;
+    }
+    else if(e.keyCode == 32 && lives > 0) {
+        for(var i=0;i<lasers.length;i++){
+            if(!lasers[i].go){
+                lasers[i].go = true;
+                lasers[i].x = 0;
+                break;
+            }
+        }
+    }
+}
+
+function keyUpHandler(e) {
+    if(e.keyCode == 40 && lives > 0) {
+        downPressed = false;
+    }
+    else if(e.keyCode == 38 && lives > 0) {
+        upPressed = false;
+    }
+}
+
+function drawXwing(){
+
+    ctx.beginPath();
+    ctx.rect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fill();
+    ctx.closePath();
+if(lives > 0){
+	ctx.drawImage(xwingImg,0,paddleY-50,200,100);
+	//ctx.drawGif(explosionImg,0,paddleY-50,100,100);
+	//ctx.drawImage(myGif,0,0);
+}
+
+	
+}
+
+
+
+function triangle(tie,x1,y1,x2,y2,x3,y3,fill){
+    ctx.beginPath();
+    ctx.moveTo(tie.x+x1, tie.y+y1);
+    ctx.lineTo(tie.x+x2, tie.y+y2);
+    ctx.lineTo(tie.x+x3, tie.y+y3);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.closePath();
+
+}
+function drawTIE(){
+    for(var t=0;t<ties.length;t++){
+        var tie = ties[t];
+        if(tie.alive){
+        	ctx.drawImage(tieImg,tie.x,tie.y-50,100,100);
+            if(tie.x <= 600 && lives > 0){
+				tielaserboom = false
+                ctx.beginPath();
+                ctx.rect(tie.laserX, tie.y, 40, 2);
+                ctx.fillStyle = "green";
+                ctx.fill();
+                ctx.closePath();
+	//making tie lasers cause damage to x wing	    
+		if(tie.laserX <= 120 && tie.laserX >= 5 && tie.y >= paddleY-40 && tie.y <= paddleY+40 && lives > 0){
+		lives -= 1
+		tielaserboom = true
+		}
+			
+		if(tielaserboom == false){
+                tie.laserX -= 20
+		}
+		if(tielaserboom == true){
+                tie.laserX = 12093709
+		}
+		    //making tie cause 5 damage to x wing if they crash
+		if(tie.y >= paddleY-70 && tie.y <= paddleY+70 && tie.x <=120 && tie.x >= 5 && lives > 0){
+			lives -= 5
+			resetTie(tie);//add explosion here
+		}
+				
+            }
+            if(tie.x < canvas.width){
+                for(var i=0;i<lasers.length;i++){
+                    var laser = lasers[i];
+                    if(laser.x >= tie.x && laser.x <= tie.x + 100 && paddleY <= tie.y + 50 && paddleY >= tie.y - 50 && laser.go == true && lives > 0){
+                        resetTie(tie);//add explosion here
+                        laser.go = false;
+						incScore();
+                    }
+                }
+            }
+            if(tie.x <= -100){
+            	resetTie(tie);
+            }
+    	}
+    }
+}
+function incScore(){
+	score+=1;
+	if((score % 5) ==0){
+		level++;
+		createTieFighters(level);
+	}
+}
+	
+function drawDeath(){
+	if(lives <= -0.00001){
+		lives = 0
+	}
+	if(lives <= 0){
+		ctx.font = "72px Arial";
+    ctx.fillStyle = "#f37101ff";
+    ctx.fillText("GAME OVER", canvas.width/2-260, canvas.height/2);
+	}
+	
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawXwing();
+    drawTIE();
+	drawDeath();
+
+	
+    if(upPressed==true && paddleY >= 0){
+        paddleY -=5
+    }
+    else if(downPressed == true && paddleY <= (canvas.height-paddleHeight)){
+        paddleY += 5
+    }
+
+    for(var i=0;i<lasers.length;i++){
+        var laser = lasers[0];
+        if(laser.go == true){
+            ctx.beginPath();
+            ctx.rect(laser.x, paddleY, 40, 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+            laser.x += 15
+        }
+        if(laser.x > canvas.width){
+            laser.go = false;
+        }
+    }
+    for(var t=0;t<ties.length;t++){
+		ties[t].x-=ties[t].speed;
+    }
+	  ctx.beginPath();
+            ctx.rect(7, 6, 250, 16);
+            ctx.fillStyle = "#606060";
+            ctx.fill();
+            ctx.closePath();
+	
+	ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText("Score: "+score+" Level: "+level+" Lives: "+lives, 8, 20);
+
+
+}
+setInterval(draw, 1);
+
+</script>
+
+</body>
+</html>
+
+<p>Feeling frustrated? Go to mtrains.github.io/xwing.html for the real game, and go to mtrains.github.io/starwarstesting.html for a ridiculously easy version. </p>
